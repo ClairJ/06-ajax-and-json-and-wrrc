@@ -32,8 +32,8 @@ Article.prototype.toHtml = function() {
 
 // REVIEW: This function will take the rawData, how ever it is provided, and use it to instantiate all the articles. This code is moved from elsewhere, and encapsulated in a simply-named function for clarity.
 
-// COMMENT: Where is this function called? What does 'rawData' represent now? How is this different from previous labs?
-// PUT YOUR RESPONSE HERE
+// COMMENTed: Where is this function called? What does 'rawData' represent now? How is this different from previous labs?
+// It's called in Article.fetchAll() below.  'rawData' is either what was pulled from local storage or from the JSON file.  In previous labs, the data was already in an adjacent javascript file so we didn't need to call the method elsewhere.  It always ran with initialization of the page.
 Article.loadAll = rawData => {
   rawData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)))
 
@@ -45,30 +45,31 @@ Article.fetchAll = () => {
   // REVIEW: What is this 'if' statement checking for? Where was the rawData set to local storage?
   if (localStorage.rawData) {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
-
     //DONE: This function takes in an argument. What do we pass in to loadAll()?
     Article.loadAll(JSON.parse(localStorage.rawData));
 
     //DONE: What method do we call to render the index page?
     articleView.initIndexPage();
-    // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
+    // COMMENTed: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
     // The difference is that we are now checking for content then running the initIndexPage, and pulling from a remote source instead of a local one.
-
+    console.log('Loaded from Local Storage');
   } else {
-    // TODO: When we don't already have the rawData:
+    // DONE: When we don't already have the rawData:
     // - we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?)
-    $.getJSON('./scripts/hackerIpsum.json', (data) => {
+    $.getJSON('data/hackerIpsum.json', (data) => {
+      // - we then need to load all the data into Article.all with the .loadAll function above
       Article.loadAll(data);
       console.log(data)
-      articleView.initIndexPage();})
+      // - then we can render the index page
+      articleView.initIndexPage();
+      // - we need to cache it in localStorage so we can skip the server call next time
+      localStorage.rawData = JSON.stringify(data);
 
-    // - we need to cache it in localStorage so we can skip the server call next time
-    // - we then need to load all the data into Article.all with the .loadAll function above
+    }).then(console.log('works'));
 
-    // - then we can render the index page
-    // articleView.initIndexPage();
 
-    // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
-    // PUT YOUR RESPONSE HERE
+
+    // COMMENTed: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
+    // Article.loadAll() must come before articleView.initIndexPage() because it needs the data to be loaded in order to initialize.  Sending to local storage can happen anywhere in that order.
   }
 }
