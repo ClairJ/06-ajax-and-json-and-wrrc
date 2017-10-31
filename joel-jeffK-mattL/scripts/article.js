@@ -49,18 +49,24 @@ Article.fetchAll = () => {
     //DONE: This function takes in an argument. What do we pass in to loadAll()?
     Article.loadAll(JSON.parse(localStorage.rawData));
 
-    //TODO: What method do we call to render the index page?
-
+    //DONE: What method do we call to render the index page?
+    articleView.initIndexPage();
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // PUT YOUR RESPONSE HERE
+    // The difference is that we are now checking for content then running the initIndexPage, and pulling from a remote source instead of a local one.
 
   } else {
     // TODO: When we don't already have the rawData:
     // - we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?)
+    $.getJSON('./scripts/hackerIpsum.json', (data) => {
+      Article.loadAll(data);
+      console.log(data)
+      articleView.initIndexPage();})
+
     // - we need to cache it in localStorage so we can skip the server call next time
     // - we then need to load all the data into Article.all with the .loadAll function above
-    // - then we can render the index page
 
+    // - then we can render the index page
+    // articleView.initIndexPage();
 
     // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
     // PUT YOUR RESPONSE HERE
