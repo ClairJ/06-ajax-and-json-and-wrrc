@@ -41,7 +41,7 @@ Article.loadAll = rawData => {
 }
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
-var that;
+
 function getHackerData() {
   $.getJSON('data/hackerIpsum.json', function(data, message, xhr) {
     // - we then need to load all the data into Article.all with the .loadAll function above
