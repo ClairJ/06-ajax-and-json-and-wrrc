@@ -41,33 +41,48 @@ Article.loadAll = rawData => {
 }
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
+var that;
+function getHackerData() {
+  $.getJSON('data/hackerIpsum.json', function(data, message, xhr) {
+    // - we then need to load all the data into Article.all with the .loadAll function above
+    Article.loadAll(data);
+    // - then we can render the index page
+    articleView.initIndexPage();
+    // - we need to cache it in localStorage so we can skip the server call next time
+    localStorage.rawData = JSON.stringify(data);
+
+    localStorage.etag = xhr.getResponseHeader('etag');
+  });
+}
 Article.fetchAll = () => {
   // REVIEW: What is this 'if' statement checking for? Where was the rawData set to local storage?
   if (localStorage.rawData) {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
     //DONE: This function takes in an argument. What do we pass in to loadAll()?
-    Article.loadAll(JSON.parse(localStorage.rawData));
+    $.ajax({
+      url : "data/hackerIpsum.json",
+      type : 'HEAD',
+      success : function(data, message, xhr) {
+        if (localStorage.etag === xhr.getResponseHeader('etag')) {
+          Article.loadAll(JSON.parse(localStorage.rawData));
 
-    //DONE: What method do we call to render the index page?
-    articleView.initIndexPage();
-    // COMMENTed: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // The difference is that we are now checking for content then running the initIndexPage, and pulling from a remote source instead of a local one.
-    console.log('Loaded from Local Storage');
+          //DONE: What method do we call to render the index page?
+          articleView.initIndexPage();
+          // COMMENTed: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
+          // The difference is that we are now checking for content then running the initIndexPage, and pulling from a remote source instead of a local one.
+          console.log('Loaded from Local Storage');
+          console.log('data correct');
+        } else {
+          console.log('data changed');
+          getHackerData();
+        }
+      }
+    })
+
   } else {
     // DONE: When we don't already have the rawData:
     // - we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?)
-    $.getJSON('data/hackerIpsum.json', (data) => {
-      // - we then need to load all the data into Article.all with the .loadAll function above
-      Article.loadAll(data);
-      console.log(data)
-      // - then we can render the index page
-      articleView.initIndexPage();
-      // - we need to cache it in localStorage so we can skip the server call next time
-      localStorage.rawData = JSON.stringify(data);
-
-    }).then(console.log('works'));
-
-
+    getHackerData();
 
     // COMMENTed: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
     // Article.loadAll() must come before articleView.initIndexPage() because it needs the data to be loaded in order to initialize.  Sending to local storage can happen anywhere in that order.
